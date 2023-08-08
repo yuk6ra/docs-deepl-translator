@@ -1,100 +1,87 @@
 package main
 
 import (
+	// "encoding/json"
 	"deepl/lib"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
-	"bytes"
-
-	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/extension"
-	"github.com/yuin/goldmark/parser"
-
-	"github.com/PuerkitoBio/goquery"
 )
 
 func main() {
+	input := "input/overview.md"
+	output := "output/overview.md"
 
-	str, err := os.ReadFile("sample.md")
-
-	// Translate the English part into Japanese
+	str, err := os.ReadFile(input)
 	
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(string(str))
+
+	var mdAll string
+
+	metadata := lib.GetMetadata(string(str))
 	
-	md := string(str)
+	re := regexp.MustCompile(regexp.QuoteMeta(metadata))
 
+	mdAll = string(str)
 
-	// var englishPart string
+	md := lib.ReplaceAsterisks(mdAll)
+	fmt.Println("MD", md)
 
-	mdParser := goldmark.New(
-		goldmark.WithExtensions(extension.DefinitionList),
-		goldmark.WithParserOptions(
-			parser.WithAttribute(),
-			parser.WithAutoHeadingID(),
-		),
-	)
+	mdSplit := re.Split(string(md), 2)[1]
 
+	htmlAll := lib.ConvertHTML(mdSplit)
 
-	source := []byte(md)
+	// htmlSlice := lib.SplitHTMLByTags(htmlAll, "h2", "ul", "h3", "h4", "h5", "h6", "p")
+	htmlSlice := strings.Split(htmlAll, "\n")
+	fmt.Println("HTML", htmlSlice)
 
-	var buf strings.Builder
-	if err := mdParser.Convert(source, &buf); err != nil {
-		panic(err)
-	}
+	resultSlice := []string{metadata}
 
-	doc, err := goquery.NewDocumentFromReader(bytes.NewReader([]byte(buf.String())))
-	if err != nil {
-		panic(err)
-	}
-
-	doc.Find("*").Each(func(i int, s *goquery.Selection) {
-		tag := s.Get(0).Data
-		text := s.Text()
-		fmt.Printf("%s: %s\n", tag, text)
-	})
-
-	a := strings.Split(buf.String(), "\n")
-
-	for _, text := range a {
+	for i, text := range htmlSlice {
+		fmt.Println(i, text)
 		if strings.HasPrefix(text, "<h") {
-			fmt.Println(text)
-		} else {
-			deepl := lib.DeeplRequest{
+			md := lib.ConvertMarkdown(text)
+			resultSlice = append(resultSlice, md)
+		} else if strings.HasPrefix(text, "<li") {
+			req := lib.DeeplRequest{
 				Text:        text,
 				Source_lang: "EN",
 				Target_lang: "JA",
 			}
+			res := lib.DeepLTransration(req)
+			md := lib.ConvertMarkdown(res)
+			resultSlice = append(resultSlice, "- " + md)
+		} else {
+			req := lib.DeeplRequest{
+				Text:        text,
+				Source_lang: "EN",
+				Target_lang: "JA",
+			}
+			res := lib.DeepLTransration(req)
+			md := lib.ConvertMarkdown(res)
 
-			fmt.Println(text)
-			result := lib.DeepLTransration(deepl)
-			fmt.Println(result)
+			resultSlice = append(resultSlice, md)			
 		}
 	}
 
-	// lib.Hi()
-	// fmt.Println("Hi!")
+	fmt.Println("RESULT", resultSlice)
 
-	// bytes, err := os.ReadFile("sample.md")
+	file, err := os.Create(output)
+	defer file.Close()
 
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// fmt.Println(string(bytes))
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	// d := lib.DeeplRequest{
-	// 	Text:        string(bytes),
-	// 	Source_lang: "EN",
-	// 	Target_lang: "JA",
-	// }
-
-	// fmt.Println(d)
-	// result := lib.DeepLTransration(d)
-	// fmt.Println(result)
-
+	data := []byte(strings.Join(resultSlice, "\n"))
 	
+	_, err = file.Write(data)
+	
+	if err != nil {
+		fmt.Println(err)
+	}
 
 }

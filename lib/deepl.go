@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"encoding/json"
 
 	"github.com/joho/godotenv"
 )
@@ -18,6 +19,15 @@ type DeeplRequest struct {
 	Text string
 	Source_lang string
 	Target_lang string
+}
+
+type Translation struct {
+	DetectedSourceLanguage string `json:"detected_source_language"`
+	Text                   string `json:"text"`
+}
+
+type TranslationsResponse struct {
+	Translations []Translation `json:"translations"`
 }
 
 func DeepLTransration(vals DeeplRequest) string {
@@ -63,7 +73,21 @@ func DeepLTransration(vals DeeplRequest) string {
 		fmt.Println("error", err)
 	}
 
-	fmt.Println("Response:", string(body))
+	text := extractTextFromJSON(string(body))
 
-	return string(body)
+	return text
+}
+
+func extractTextFromJSON(jsonStr string) string {
+	var response TranslationsResponse
+	if err := json.Unmarshal([]byte(jsonStr), &response); err != nil {
+		fmt.Println("Error:", err)
+		return ""
+	}
+
+	if len(response.Translations) > 0 {
+		return response.Translations[0].Text
+	}
+
+	return ""
 }

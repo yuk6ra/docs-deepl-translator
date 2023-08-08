@@ -5,17 +5,19 @@ import (
 	"fmt"
 	// "regexp"
 	// "io"
-	"bytes"
+	// "bytes"
 
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
+	"github.com/JohannesKaufmann/html-to-markdown"
 
-
-	"github.com/PuerkitoBio/goquery"
+	// "github.com/PuerkitoBio/goquery"
 
 	"strings"
 )
+
+
 
 func Test() {
 
@@ -49,7 +51,20 @@ The [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) is an open-source framewo
 	translatedMd := strings.Replace(md, englishPart, translatedText, 1)
 
 	fmt.Println(translatedMd)
+	Main()
 
+}
+
+func Main() {
+	converter := md.NewConverter("", true, nil)
+
+	html := `<strong>Important</strong>`
+
+	markdown, err := converter.ConvertString(html)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("md ->", markdown)
 }
 
 // Extract the English part from the Markdown using Goldmark
@@ -78,17 +93,17 @@ func extractEnglish(md string) string {
 
 	fmt.Println("B",buf.String())
 
-	doc, err := goquery.NewDocumentFromReader(bytes.NewReader([]byte(buf.String())))
-	if err != nil {
-		panic(err)
-	}
+	// doc, err := goquery.NewDocumentFromReader(bytes.NewReader([]byte(buf.String())))
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	doc.Find("*").Each(func(i int, s *goquery.Selection) {
-		tag := s.Get(0).Data
-		text := s.Text()
-		fmt.Printf("%s: %s\n", tag, text)
-		// fmt.Printf(tag, text)
-	})
+	// doc.Find("*").Each(func(i int, s *goquery.Selection) {
+	// 	tag := s.Get(0).Data
+	// 	text := s.Text()
+	// 	fmt.Printf("%s: %s\n", tag, text)
+	// 	// fmt.Printf(tag, text)
+	// })
 
 	return englishPart
 }
