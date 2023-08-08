@@ -7,11 +7,12 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
 )
 
 func main() {
-	input := "input/overview.md"
-	output := "output/overview.md"
+	input := "docs/input/overview.md"
+	output := "docs/output/overview.md"
 
 	str, err := os.ReadFile(input)
 	
@@ -42,10 +43,12 @@ func main() {
 
 	for i, text := range htmlSlice {
 		fmt.Println(i, text)
-		if strings.HasPrefix(text, "<h") {
+
+		switch {
+		case strings.Contains(text, "<h"):
 			md := lib.ConvertMarkdown(text)
 			resultSlice = append(resultSlice, md)
-		} else if strings.HasPrefix(text, "<li") {
+		case strings.Contains(text, "<li>"):
 			req := lib.DeeplRequest{
 				Text:        text,
 				Source_lang: "EN",
@@ -54,7 +57,10 @@ func main() {
 			res := lib.DeepLTransration(req)
 			md := lib.ConvertMarkdown(res)
 			resultSlice = append(resultSlice, "- " + md)
-		} else {
+		case strings.Contains(text, ":::"):
+			md := lib.ConvertMarkdown(text)
+			resultSlice = append(resultSlice, "\n" + md + "\n")
+		default:
 			req := lib.DeeplRequest{
 				Text:        text,
 				Source_lang: "EN",
