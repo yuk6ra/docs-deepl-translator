@@ -1,13 +1,11 @@
 package main
 
 import (
-	// "encoding/json"
 	"deepl/lib"
 	"fmt"
 	"os"
 	"regexp"
 	"strings"
-
 )
 
 func main() {
@@ -15,7 +13,7 @@ func main() {
 	output := "docs/output/overview.md"
 
 	str, err := os.ReadFile(input)
-	
+
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -23,7 +21,7 @@ func main() {
 	var mdAll string
 
 	metadata := lib.GetMetadata(string(str))
-	
+
 	re := regexp.MustCompile(regexp.QuoteMeta(metadata))
 
 	mdAll = string(str)
@@ -35,7 +33,6 @@ func main() {
 
 	htmlAll := lib.ConvertHTML(mdSplit)
 
-	// htmlSlice := lib.SplitHTMLByTags(htmlAll, "h2", "ul", "h3", "h4", "h5", "h6", "p")
 	htmlSlice := strings.Split(htmlAll, "\n")
 	fmt.Println("HTML", htmlSlice)
 
@@ -56,10 +53,10 @@ func main() {
 			}
 			res := lib.DeepLTransration(req)
 			md := lib.ConvertMarkdown(res)
-			resultSlice = append(resultSlice, "- " + md)
+			resultSlice = append(resultSlice, "- "+md)
 		case strings.Contains(text, ":::"):
 			md := lib.ConvertMarkdown(text)
-			resultSlice = append(resultSlice, "\n" + md + "\n")
+			resultSlice = append(resultSlice, "\n"+md+"\n")
 		default:
 			req := lib.DeeplRequest{
 				Text:        text,
@@ -69,7 +66,7 @@ func main() {
 			res := lib.DeepLTransration(req)
 			md := lib.ConvertMarkdown(res)
 
-			resultSlice = append(resultSlice, md)			
+			resultSlice = append(resultSlice, md)
 		}
 	}
 
@@ -83,9 +80,9 @@ func main() {
 	}
 
 	data := []byte(strings.Join(resultSlice, "\n"))
-	
+
 	_, err = file.Write(data)
-	
+
 	if err != nil {
 		fmt.Println(err)
 	}

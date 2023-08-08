@@ -1,22 +1,22 @@
 package lib
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"net/http"
 	"net/url"
+
+	"os"
 	"strings"
-	"encoding/json"
 
 	"github.com/joho/godotenv"
 )
 
 const END_POINT string = "https://api-free.deepl.com/v2/translate"
 
-
 type DeeplRequest struct {
-	Text string
+	Text        string
 	Source_lang string
 	Target_lang string
 }
@@ -54,14 +54,14 @@ func DeepLTransration(vals DeeplRequest) string {
 		fmt.Println("error", err)
 	}
 
-	req.Header.Set("Authorization", "DeepL-Auth-Key " + api_key)
+	req.Header.Set("Authorization", "DeepL-Auth-Key "+api_key)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	req.Body = io.NopCloser(strings.NewReader(data.Encode()))
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	
+
 	if err != nil {
 		fmt.Println("error", err)
 	}
