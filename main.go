@@ -70,8 +70,10 @@ func main() {
 		}
 	}
 
-	fmt.Println("RESULT", resultSlice)
+	write(output, resultSlice)
+}
 
+func write(output string, resultSlice []string) {
 	file, err := os.Create(output)
 	defer file.Close()
 
@@ -86,5 +88,4 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-
 }
