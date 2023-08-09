@@ -20,15 +20,13 @@ func main() {
 		return
 	}
 
-	for i, mdFile := range markdownFiles {
-		if i == 1 {
-			fmt.Println(mdFile)
-			translated := translate(mdFile)
+	for _, mdFile := range markdownFiles {
+		fmt.Println(mdFile)
+		translated := translate(mdFile)
 
-			outputPath := strings.Replace(mdFile, "docs/", "docs_ja/", 1)
+		outputPath := strings.Replace(mdFile, "docs/", "docs_ja/", 1)
 
-			write(outputPath, translated)
-		}
+		write(outputPath, translated)
 	}
 
 }
